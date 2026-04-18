@@ -1,17 +1,33 @@
 # Demo RAG
 
-Standalone Streamlit app for searching and chatting with markdown class notes.
+Standalone Streamlit repo for indexing markdown notes and querying them with hybrid retrieval.
 
-This repo is public-safe by design:
-- the app code lives here
-- the checked-in `notes/` folder contains only synthetic sample notes
-- your real notes can stay anywhere else on disk and be indexed by setting `CLASS_NOTES_DIR`
+This repository is intentionally decoupled from any one course repo. It works in two modes:
+
+- self-contained demo mode using the synthetic sample notes checked into this repo
+- external-notes mode by pointing the app at any private notes directory on disk
+
+That split is the point of the repo:
+- the app can be public
+- your real notes can stay private
+- the same code can index notes from different courses or projects
+
+## Core Idea
+
+`demo-rag` is the reusable app layer only.
+
+It does not assume:
+- a specific course structure
+- a `Week_*` folder layout
+- an `agentic-ai-study-guide` checkout
+
+If your notes do follow a course structure, you can still target only the subset you want with `CLASS_NOTES_GLOB`.
 
 ## What It Does
 
 - hybrid retrieval with BM25 + vector search
-- direct question answering over indexed notes
-- browse full notes by date for dated note files
+- direct question answering over indexed markdown notes
+- browse-by-date for notes that contain or encode a date
 - optional agentic mode using a ReAct loop
 - groundedness scoring for direct-answer mode
 
@@ -23,7 +39,7 @@ This repo is public-safe by design:
 - `chain.py`: direct RAG answer chain
 - `agent.py`: agentic tool-routing mode
 - `evaluator.py`: groundedness scoring
-- `notes/`: synthetic sample notes
+- `notes/`: synthetic sample notes for local testing
 
 ## Setup
 
@@ -56,7 +72,9 @@ By default the app indexes markdown files under:
 notes/
 ```
 
-To point the app at your real private notes instead, set:
+That is enough to test the app immediately after cloning.
+
+To point the app at your real private notes instead:
 
 ```bash
 export CLASS_NOTES_DIR="/absolute/path/to/your/notes"
@@ -64,17 +82,30 @@ export CLASS_NOTES_DIR="/absolute/path/to/your/notes"
 
 The app will recursively index `*.md` files under that directory.
 
-If your private notes live inside a larger course repo and you only want to index a subset such as `class_notes`, also set a glob filter:
+If your notes live inside a larger private repo and you only want a subset, also set a glob filter:
 
 ```bash
-export CLASS_NOTES_DIR="/absolute/path/to/private/course/repo"
+export CLASS_NOTES_DIR="/absolute/path/to/private/repo"
 export CLASS_NOTES_GLOB="Week_*/class_notes/*.md"
 ```
 
-Date support:
-- if a note contains a line like `Thu, 09 Apr 26`, that date is used
-- otherwise the app falls back to filenames like `04-09-26.md`
-- undated notes still work for Q&A, but they will not appear in browse-by-date mode
+Examples of useful glob filters:
+
+```bash
+export CLASS_NOTES_GLOB="**/*.md"
+export CLASS_NOTES_GLOB="Week_*/class_notes/*.md"
+export CLASS_NOTES_GLOB="lectures/*.md,review/*.md"
+```
+
+## Date Handling
+
+Browse-by-date uses whichever date signal it can find first:
+
+1. a line inside the note body like `Thu, 09 Apr 26`
+2. an ISO-style filename prefix like `2026-04-15-topic.md`
+3. a short filename like `04-09-26.md`
+
+Undated notes still work for search and Q&A, but they will not appear in the date dropdown.
 
 ## First Run
 
@@ -91,6 +122,7 @@ Start the app:
 ```
 
 Generated local artifacts:
+
 - `chroma_db/`
 - `bm25_corpus.pkl`
 
@@ -100,20 +132,21 @@ Those files are gitignored.
 
 ### Direct Q&A
 
-Use direct mode when you want a concise answer grounded in the indexed notes.
+Use direct mode when you want a concise answer grounded in retrieved notes.
 
 Sample questions:
+
 - `How are embeddings used to retrieve relevant documents?`
 - `What evaluation metrics are used for RAG?`
 - `How does the ReAct loop work in agentic RAG?`
 
 ### Browse by Date
 
-Use date mode when you want the full note text for a specific class or lecture date.
+Use date mode when you want the full note text for a dated class or lecture session.
 
 ### Agentic Mode
 
-Use agentic mode when a question may need several retrieval steps or tool decisions.
+Use agentic mode when a question may benefit from several retrieval steps or tool decisions.
 
 ## Updating Notes
 
@@ -128,12 +161,13 @@ When you add or update notes:
 
 3. Restart Streamlit if it is already running.
 
-## Privacy Model
+## Public / Private Split
 
 If you want this repo to stay public while your notes stay private:
 
 - keep your real notes outside this repo
 - set `CLASS_NOTES_DIR` to that private notes path
+- optionally narrow the indexed files with `CLASS_NOTES_GLOB`
 - do not copy private notes into `notes/`
 
-The sample notes in this repo are only there so a new user can try the app immediately.
+The checked-in `notes/` folder is only demo content for local testing.
