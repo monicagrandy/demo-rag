@@ -1,5 +1,5 @@
 """
-retriever.py — Hybrid retrieval layer for the Class Notes RAG.
+retriever.py — Hybrid retrieval layer for Demo RAG.
 
 Provides:
   1. Hybrid retriever (BM25 keyword + ChromaDB semantic) via EnsembleRetriever

@@ -1,4 +1,4 @@
-# Class Notes RAG
+# Demo RAG
 
 Standalone Streamlit app for searching and chatting with markdown class notes.
 

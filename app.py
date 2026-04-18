@@ -1,4 +1,4 @@
-"""Streamlit UI for the standalone class notes RAG app."""
+"""Streamlit UI for the standalone Demo RAG app."""
 
 from agent import build_agent
 from evaluator import score_groundedness
@@ -13,7 +13,7 @@ from config import get_notes_root, get_source_specs
 # ---------------------------------------------------------------------------
 
 st.set_page_config(
-    page_title="Class Notes RAG",
+    page_title="Demo RAG",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -261,7 +261,7 @@ def get_kb_stats() -> tuple[int, int]:
 with st.sidebar:
     notes_root = get_notes_root()
 
-    st.markdown('<p class="main-header" style="font-size:1.5rem;">🧠 Class Notes RAG</p>', unsafe_allow_html=True)
+    st.markdown('<p class="main-header" style="font-size:1.5rem;">🧠 Demo RAG</p>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header" style="font-size:0.85rem;">Standalone notes search and study assistant</p>', unsafe_allow_html=True)
 
     st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
@@ -333,7 +333,7 @@ with st.sidebar:
 # Main content
 # ---------------------------------------------------------------------------
 
-st.markdown('<h1 class="main-header">Class Notes RAG</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">Demo RAG</h1>', unsafe_allow_html=True)
 
 _MODE_SUBTITLES = {
     "💬 Ask a Question": "Direct RAG — hybrid keyword + semantic search over your indexed notes",

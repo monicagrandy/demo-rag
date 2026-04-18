@@ -1,4 +1,4 @@
-"""Offline indexing pipeline for the standalone class notes RAG app."""
+"""Offline indexing pipeline for the standalone Demo RAG app."""
 
 import os
 import pickle
@@ -141,7 +141,7 @@ def main():
     print("=" * 60)
     notes_root = get_notes_root()
 
-    print("📚 Class Notes RAG — Ingestion Pipeline")
+    print("📚 Demo RAG — Ingestion Pipeline")
     print("=" * 60)
     print(f"   App root: {Path(__file__).resolve().parent}")
     print(f"   Notes root: {notes_root}")
