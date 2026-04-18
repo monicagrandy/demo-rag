@@ -44,6 +44,11 @@ def get_notes_globs() -> list[str]:
 
 
 def parse_class_date(filename_stem: str) -> str | None:
+    iso_match = re.match(r"(\d{4})-(\d{2})-(\d{2})(?:$|-)", filename_stem)
+    if iso_match:
+        year, month, day = iso_match.groups()
+        return f"{year}-{month}-{day}"
+
     match = re.fullmatch(r"(\d{2})-(\d{2})-(\d{2})", filename_stem)
     if not match:
         return None

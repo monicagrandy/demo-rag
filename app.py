@@ -308,8 +308,19 @@ with st.sidebar:
 
     st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
 
-    st.markdown('<p class="mode-label">Notes Root</p>', unsafe_allow_html=True)
-    st.code(str(notes_root), language=None)
+    st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
+
+    st.markdown('<p class="mode-label">Topics Covered</p>', unsafe_allow_html=True)
+    st.markdown("""
+    - 🐍 Python for GenAI
+    - 📝 NLP & Transformers
+    - 🔢 Text Embeddings
+    - ✂️ Chunking Strategies
+    - 📚 Indexing & Retrieval
+    - 🔄 RAG Pipelines
+    - 📊 RAG Evaluation
+    - 🤖 Agentic RAG
+    """)
 
     st.markdown('<div class="gradient-divider"></div>', unsafe_allow_html=True)
 
@@ -325,10 +336,7 @@ with st.sidebar:
 
         **Model**: `gpt-4o-mini` for generation,
         `text-embedding-3-small` for embeddings.
-
-        Set `CLASS_NOTES_DIR` to index notes outside this repo.
         """)
-
 # ---------------------------------------------------------------------------
 # Main content
 # ---------------------------------------------------------------------------
