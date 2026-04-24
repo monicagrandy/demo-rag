@@ -74,6 +74,11 @@ notes/
 
 That is enough to test the app immediately after cloning.
 
+The checked-in notes can include:
+
+- `notes/sample/` for synthetic demo content
+- `notes/agentic-ai/` for shareable class notes mirrored from a separate study workspace
+
 To point the app at your real private notes instead:
 
 ```bash
@@ -170,4 +175,4 @@ If you want this repo to stay public while your notes stay private:
 - optionally narrow the indexed files with `CLASS_NOTES_GLOB`
 - do not copy private notes into `notes/`
 
-The checked-in `notes/` folder is only demo content for local testing.
+The checked-in `notes/` folder may contain synthetic demo notes and any shareable public notes you intentionally choose to publish. Keep private notes outside this repo.
