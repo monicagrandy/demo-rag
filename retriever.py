@@ -9,7 +9,9 @@ Provides:
 import pickle
 from pathlib import Path
 
+from config import is_excluded_relative_path
 from langchain_core.documents import Document
+from langchain_core.retrievers import BaseRetriever
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
 from langchain_openai import OpenAIEmbeddings
@@ -25,6 +27,27 @@ BM25_PATH = APP_DIR / "bm25_corpus.pkl"
 
 EMBEDDING_MODEL = "text-embedding-3-small"
 
+
+def _document_is_excluded(doc: Document) -> bool:
+    source_file = doc.metadata.get("source_file", "")
+    return bool(source_file and is_excluded_relative_path(source_file))
+
+
+def _filter_documents(docs: list[Document]) -> list[Document]:
+    return [doc for doc in docs if not _document_is_excluded(doc)]
+
+
+class FilteredRetriever(BaseRetriever):
+    """Wrap another retriever and drop excluded source files from results."""
+
+    base_retriever: BaseRetriever
+    limit: int = 5
+
+    def _get_relevant_documents(self, query: str, *, run_manager) -> list[Document]:
+        docs = self.base_retriever.invoke(query)
+        return _filter_documents(docs)[: self.limit]
+
+
 # ---------------------------------------------------------------------------
 # Internal loaders
 # ---------------------------------------------------------------------------
@@ -35,10 +58,11 @@ def _load_bm25_documents() -> list[Document]:
     with open(BM25_PATH, "rb") as f:
         corpus_data = pickle.load(f)
 
-    return [
+    docs = [
         Document(page_content=item["page_content"], metadata=item["metadata"])
         for item in corpus_data
     ]
+    return _filter_documents(docs)
 
 
 def _get_vectorstore(api_key: str) -> Chroma:
@@ -64,7 +88,7 @@ def get_hybrid_retriever(
     k: int = 5,
     bm25_weight: float = 0.4,
     semantic_weight: float = 0.6,
-) -> EnsembleRetriever:
+) -> BaseRetriever:
     """
     Build a hybrid retriever combining BM25 (keyword) and ChromaDB (semantic).
 
@@ -75,17 +99,19 @@ def get_hybrid_retriever(
         semantic_weight: Weight for semantic results in the ensemble.
 
     Returns:
-        EnsembleRetriever ready for use in a LangChain chain.
+        Filtered retriever ready for use in the app and chains.
     """
+    search_k = max(k * 3, 10)
+
     # BM25 keyword retriever
     bm25_docs = _load_bm25_documents()
-    bm25_retriever = BM25Retriever.from_documents(bm25_docs, k=k)
+    bm25_retriever = BM25Retriever.from_documents(bm25_docs, k=search_k)
 
     # ChromaDB semantic retriever
     vectorstore = _get_vectorstore(api_key)
     semantic_retriever = vectorstore.as_retriever(
         search_type="mmr",  # Maximal Marginal Relevance for diversity
-        search_kwargs={"k": k},
+        search_kwargs={"k": search_k},
     )
 
     # Combine via EnsembleRetriever
@@ -94,7 +120,7 @@ def get_hybrid_retriever(
         weights=[bm25_weight, semantic_weight],
     )
 
-    return hybrid
+    return FilteredRetriever(base_retriever=hybrid, limit=k)
 
 
 def get_notes_by_date(api_key: str, date_str: str) -> list[Document]:
@@ -121,7 +147,10 @@ def get_notes_by_date(api_key: str, date_str: str) -> list[Document]:
 
     docs = []
     for content, metadata in zip(results["documents"], results["metadatas"]):
-        docs.append(Document(page_content=content, metadata=metadata))
+        doc = Document(page_content=content, metadata=metadata)
+        if _document_is_excluded(doc):
+            continue
+        docs.append(doc)
 
     # Sort by source file, then chunk index for proper reconstruction
     docs.sort(key=lambda d: (d.metadata.get("source_file", ""), d.metadata.get("chunk_index", 0)))
@@ -142,6 +171,8 @@ def get_available_dates(api_key: str) -> list[str]:
     results = vectorstore.get(include=["metadatas"])
     dates = set()
     for meta in results["metadatas"]:
+        if is_excluded_relative_path(meta.get("source_file", "")):
+            continue
         d = meta.get("class_date", "reference")
         if d != "reference":
             dates.add(d)

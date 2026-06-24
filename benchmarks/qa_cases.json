@@ -1,0 +1,17 @@
+[
+  {
+    "id": "qa-evaluation-metrics",
+    "question": "What evaluation metrics are used for RAG?",
+    "min_groundedness": 0.85
+  },
+  {
+    "id": "qa-hybrid-retrieval",
+    "question": "How does hybrid retrieval improve a RAG system?",
+    "min_groundedness": 0.85
+  },
+  {
+    "id": "qa-react-loop",
+    "question": "How does the ReAct loop work in agentic RAG?",
+    "min_groundedness": 0.85
+  }
+]

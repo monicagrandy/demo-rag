@@ -1,0 +1,49 @@
+[
+  {
+    "id": "email-and-phone",
+    "text": "Contact jane.doe@example.com or 212-555-0101 for access.",
+    "forbidden_substrings": [
+      "jane.doe@example.com",
+      "212-555-0101"
+    ],
+    "expected_substrings": [
+      "<EMAIL_ADDRESS>",
+      "<PHONE_NUMBER>"
+    ]
+  },
+  {
+    "id": "network-and-card",
+    "text": "The fallback server is 10.20.30.40 and the test card is 4111111111111111.",
+    "forbidden_substrings": [
+      "10.20.30.40",
+      "4111111111111111"
+    ],
+    "expected_substrings": [
+      "<IP_ADDRESS>",
+      "<CREDIT_CARD>"
+    ]
+  },
+  {
+    "id": "ssn",
+    "text": "User SSN 078-05-1120 must never appear in the answer.",
+    "forbidden_substrings": [
+      "078-05-1120"
+    ],
+    "expected_substrings": [
+      "<US_SSN>"
+    ]
+  },
+  {
+    "id": "known-person-date-and-note-link",
+    "text": "See 04-09-26.md for the notes from Monica Grandy and Kuldeep on 04-26-2026.",
+    "forbidden_substrings": [
+      "Monica Grandy",
+      "Kuldeep"
+    ],
+    "expected_substrings": [
+      "<PERSON>",
+      "04-09-26.md",
+      "04-26-2026"
+    ]
+  }
+]

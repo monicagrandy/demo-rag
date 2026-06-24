@@ -2,11 +2,12 @@
 
 from agent import build_agent
 from evaluator import score_groundedness
-import os
 import streamlit as st
 from retriever import get_hybrid_retriever, get_notes_by_date, get_available_dates, reconstruct_notes
 from chain import build_rag_chain, extract_sources, format_docs
 from config import get_notes_root, get_source_specs
+from privacy import redact_text
+from runtime import resolve_openai_api_key
 
 # ---------------------------------------------------------------------------
 # Page config
@@ -189,8 +190,14 @@ st.markdown("""
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "api_key" not in st.session_state:
-    st.session_state.api_key = os.environ.get("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY", "")
+
+resolved_api_key = resolve_openai_api_key() or ""
+if (
+    "api_key" not in st.session_state
+    or not st.session_state.api_key
+    or st.session_state.api_key == "your-openai-api-key-here"
+):
+    st.session_state.api_key = resolved_api_key
 if "pending_question" not in st.session_state:
     st.session_state.pending_question = None
 if "agent_messages" not in st.session_state:
@@ -423,7 +430,7 @@ if mode == "💬 Ask a Question":
 
                     retrieved_docs = retriever.invoke(pending_question)
                     sources = extract_sources(retrieved_docs)
-                    answer = chain.invoke(pending_question)
+                    answer = redact_text(chain.invoke(pending_question)).text
                     context = format_docs(retrieved_docs)
                     groundedness = score_groundedness(pending_question, context, answer, api_key)
 
@@ -477,12 +484,12 @@ elif mode == "🤖 Agentic Mode":
                     )
                     # LangGraph returns {"messages": [...]}: last message is the final answer
                     messages = result["messages"]
-                    answer = messages[-1].content
+                    answer = redact_text(messages[-1].content).text
                     # Intermediate messages are tool calls and observations
-                    steps = "\n\n".join(
+                    steps = redact_text("\n\n".join(
                         f"{m.__class__.__name__}: {m.content}"
                         for m in messages[1:-1]
-                    )
+                    )).text
                     st.markdown(answer)
                     with st.expander("🔍 Agent reasoning steps"):
                         st.text(steps)
